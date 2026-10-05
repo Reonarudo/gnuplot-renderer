@@ -4,6 +4,11 @@ export interface RuntimeOptions {
     timeout?: number;
     /** Milliseconds per engine start; default 10000. */
     startupTimeout?: number;
+    /** The SVG terminal's canvas, which sets the output `viewBox`; default 1000×500. */
+    size?: {
+        width: number;
+        height: number;
+    };
     limits?: {
         /** Whole fence body, in string length; default 64000. */
         sourceChars?: number;

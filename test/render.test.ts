@@ -117,7 +117,10 @@ test('invalid runtime options reject createRuntime', async () => {
   for (const options of [
     { timeout: 0 }, { timeout: -1 }, { timeout: Number.NaN }, { timeout: Infinity }, { startupTimeout: 0 },
     { limits: { sourceChars: 0 } }, { limits: { outputBytes: -5 } }, { limits: { sourceChars: Infinity } },
-    { timeout: '100' }, { limits: null }
+    { timeout: '100' }, { limits: null },
+    { size: null }, { size: 800 }, { size: { width: 800 } }, { size: { width: 0, height: 500 } },
+    { size: { width: 800.5, height: 500 } }, { size: { width: 800, height: -500 } },
+    { size: { width: 10001, height: 500 } }, { size: { width: '800', height: 500 } }
   ]) {
     await assert.rejects(createRuntime(options as never), TypeError, JSON.stringify(options));
   }
@@ -156,6 +159,22 @@ test('limits are runtime options', async () => {
     });
   } finally {
     await small.dispose();
+  }
+});
+
+test('the terminal size is a runtime option that sets the viewBox; the default stays 1000×500', async () => {
+  const sized = await createRuntime({ size: { width: 800, height: 500 } });
+  const explicit = await createRuntime({ size: { width: 1000, height: 500 } });
+  try {
+    const input = await plain('plot sin(x)');
+    const result = sized.render(input);
+    assert.equal(result.status, 'success');
+    if (result.status !== 'success') return;
+    assert.match(result.output, /^<svg viewBox="0 0 800 500" /);
+    assert.deepEqual(explicit.render(input), runtime.render(input));
+  } finally {
+    await sized.dispose();
+    await explicit.dispose();
   }
 });
 

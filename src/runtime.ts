@@ -7,6 +7,8 @@ export interface RuntimeOptions {
   timeout?: number;
   /** Milliseconds per engine start; default 10000. */
   startupTimeout?: number;
+  /** The SVG terminal's canvas, which sets the output `viewBox`; default 1000×500. */
+  size?: { width: number; height: number };
   limits?: {
     /** Whole fence body, in string length; default 64000. */
     sourceChars?: number;
@@ -52,6 +54,22 @@ function option(value: unknown, name: string, fallback: number): number {
   return value;
 }
 
+/** The largest terminal width or height accepted, in SVG units. */
+const maxSize = 10000;
+
+/** The terminal size: absent for its default, else two integers from 1 to `maxSize`. */
+function terminalSize(value: unknown): { width: number; height: number } {
+  if (value === undefined) return { width: 1000, height: 500 };
+  if (typeof value !== 'object' || value === null) throw new TypeError('size must be an object');
+  const { width, height } = value as Record<string, unknown>;
+  for (const [name, side] of [['width', width], ['height', height]] as const) {
+    if (!Number.isInteger(side) || (side as number) < 1 || (side as number) > maxSize) {
+      throw new TypeError(`size.${name} must be an integer from 1 to ${maxSize}`);
+    }
+  }
+  return { width: width as number, height: height as number };
+}
+
 export async function createRuntime(options: RuntimeOptions = {}): Promise<Runtime> {
   if (typeof options !== 'object' || options === null) throw new TypeError('options must be an object');
   if (options.limits !== undefined && (typeof options.limits !== 'object' || options.limits === null)) {
@@ -59,6 +77,7 @@ export async function createRuntime(options: RuntimeOptions = {}): Promise<Runti
   }
   const timeout = option(options.timeout, 'timeout', 3000);
   const startupTimeout = option(options.startupTimeout, 'startupTimeout', 10000);
+  const size = terminalSize(options.size);
   const sourceChars = option(options.limits?.sourceChars, 'limits.sourceChars', 64000);
   const outputBytes = option(options.limits?.outputBytes, 'limits.outputBytes', 4 * 1024 * 1024);
   // JSON at most doubles sanitized SVG (quotes and newlines escape to two bytes); the slack holds
@@ -77,7 +96,7 @@ export async function createRuntime(options: RuntimeOptions = {}): Promise<Runti
     state = new Int32Array(buffer, 0, HEADER / 4);
     bytes = new Uint8Array(buffer, HEADER);
     worker = new Worker(new URL('./worker.js', import.meta.url), {
-      workerData: { buffer },
+      workerData: { buffer, size },
       env: {},
       stdout: true,
       stderr: true,

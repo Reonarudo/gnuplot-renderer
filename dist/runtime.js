@@ -23,6 +23,22 @@ function option(value, name, fallback) {
     }
     return value;
 }
+/** The largest terminal width or height accepted, in SVG units. */
+const maxSize = 10000;
+/** The terminal size: absent for its default, else two integers from 1 to `maxSize`. */
+function terminalSize(value) {
+    if (value === undefined)
+        return { width: 1000, height: 500 };
+    if (typeof value !== 'object' || value === null)
+        throw new TypeError('size must be an object');
+    const { width, height } = value;
+    for (const [name, side] of [['width', width], ['height', height]]) {
+        if (!Number.isInteger(side) || side < 1 || side > maxSize) {
+            throw new TypeError(`size.${name} must be an integer from 1 to ${maxSize}`);
+        }
+    }
+    return { width: width, height: height };
+}
 export async function createRuntime(options = {}) {
     if (typeof options !== 'object' || options === null)
         throw new TypeError('options must be an object');
@@ -31,6 +47,7 @@ export async function createRuntime(options = {}) {
     }
     const timeout = option(options.timeout, 'timeout', 3000);
     const startupTimeout = option(options.startupTimeout, 'startupTimeout', 10000);
+    const size = terminalSize(options.size);
     const sourceChars = option(options.limits?.sourceChars, 'limits.sourceChars', 64000);
     const outputBytes = option(options.limits?.outputBytes, 'limits.outputBytes', 4 * 1024 * 1024);
     // JSON at most doubles sanitized SVG (quotes and newlines escape to two bytes); the slack holds
@@ -47,7 +64,7 @@ export async function createRuntime(options = {}) {
         state = new Int32Array(buffer, 0, HEADER / 4);
         bytes = new Uint8Array(buffer, HEADER);
         worker = new Worker(new URL('./worker.js', import.meta.url), {
-            workerData: { buffer },
+            workerData: { buffer, size },
             env: {},
             stdout: true,
             stderr: true,

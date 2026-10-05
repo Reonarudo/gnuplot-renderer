@@ -5,7 +5,7 @@ time. One of five renderer libraries that share the
 [render contract](http://192.168.188.68:3001/projects/markdown-renderers/wiki/Render_contract).
 
 ```sh
-npm install github:Reonarudo/gnuplot-renderer#v0.1.0
+npm install github:Reonarudo/gnuplot-renderer#v0.2.0
 ```
 
 On npm 12 or later, a project installing git dependencies also needs `allow-git=root` in its
@@ -35,7 +35,7 @@ Rendering takes two steps:
 
 | `status` | Fields | When |
 | --- | --- | --- |
-| `success` | `output`, `notes` | `output` is one `<svg class="gnuplot" viewBox="0 0 1000 500">` with no size, ready to inline; `notes` holds `print` output and warnings as plain text |
+| `success` | `output`, `notes` | `output` is one `<svg class="gnuplot" viewBox="0 0 1000 500">` (the `viewBox` follows `size`) with no size, ready to inline; `notes` holds `print` output and warnings as plain text |
 | `failure` | `message`, `line?`, `column?` | a gnuplot error (plain text, 1-based fence-relative position), a data-file problem found by `prepare`, an output-policy breach, a fence that draws nothing, or an exceeded limit |
 | `timeout` | `budget` | the render ran past `timeout` milliseconds |
 | `unavailable` | `reason` | the engine could not start |
@@ -53,6 +53,7 @@ cache key.
 | --- | --- | --- |
 | `timeout` | `3000` | milliseconds per render |
 | `startupTimeout` | `10000` | milliseconds per engine start, never charged to a render |
+| `size` | `{ width: 1000, height: 500 }` | the SVG terminal's canvas and so the output `viewBox`; integers from 1 to 10000. gnuplot-specific: a smaller canvas draws text larger relative to the plot |
 | `limits.sourceChars` | `64000` | fence body, in string length |
 | `limits.outputBytes` | `4194304` | sanitized SVG, in UTF-8 bytes |
 
@@ -92,7 +93,7 @@ Plots are drawn on a white background; any dark-mode treatment is the consumer's
 
 ## The output policy
 
-The library owns the terminal (`svg size 1000,500 enhanced`, white background) and the output
+The library owns the terminal (`svg size 1000,500 enhanced` unless `size` says otherwise, white background) and the output
 file. A fence that sets or unsets `terminal` or `output`, or that `load`s or `call`s another
 script, is a failure. Quoted text and comments do not count. The policy keeps rendering correct.
 It is **not** the safety boundary. That boundary is the wasm build, described below.

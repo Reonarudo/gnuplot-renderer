@@ -25,12 +25,12 @@ type Factory = (options: Record<string, unknown>) => Promise<Engine>;
 
 const ENOENT = 44;
 const EFBIG = 22;
-/** The terminal every fence is drawn with; the root's size is dropped, so this sets the aspect. */
-const preamble = "set terminal svg size 1000,500 enhanced background rgb 'white'\nset output 'plot.svg'\n";
 /** Characters of `print` output, warnings and errors kept per render. */
 const diagnosticsChars = 16000;
 
-const { buffer } = workerData as { buffer: SharedArrayBuffer };
+const { buffer, size } = workerData as { buffer: SharedArrayBuffer; size: { width: number; height: number } };
+/** The terminal every fence is drawn with; the root's size is dropped, so this sets the aspect. */
+const preamble = `set terminal svg size ${size.width},${size.height} enhanced background rgb 'white'\nset output 'plot.svg'\n`;
 const state = new Int32Array(buffer, 0, HEADER / 4);
 const bytes = new Uint8Array(buffer, HEADER);
 
