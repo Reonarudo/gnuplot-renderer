@@ -7,6 +7,8 @@ at least a minor version.
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-10-21
+
 ### Added
 
 - Releases: every version is an immutable GitHub Release whose one asset is the `npm pack`
@@ -14,4 +16,5 @@ at least a minor version.
 - Golden SVG tests for every gnuplot fence in the site's showcase and the extension's demos.
   Every fence draws byte-identical SVG to v0.2.0.
 
-[Unreleased]: https://github.com/Reonarudo/gnuplot-renderer/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Reonarudo/gnuplot-renderer/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Reonarudo/gnuplot-renderer/compare/v0.2.0...v1.0.0
