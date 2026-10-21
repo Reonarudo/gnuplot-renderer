@@ -5,11 +5,11 @@ time. One of five renderer libraries that share the
 [render contract](http://192.168.188.68:3001/projects/markdown-renderers/wiki/Render_contract).
 
 ```sh
-npm install github:Reonarudo/gnuplot-renderer#v0.2.0
+npm install https://github.com/Reonarudo/gnuplot-renderer/releases/download/v1.0.0/reonarudo-gnuplot-renderer-1.0.0.tgz
 ```
 
-On npm 12 or later, a project installing git dependencies also needs `allow-git=root` in its
-`.npmrc`. Nothing runs on install: `dist/` and the engine are committed.
+On npm 12 or later, the installing project also needs `allow-remote=root` in its `.npmrc`.
+Nothing runs on install: `dist/` and the engine are committed.
 
 ## Use
 
@@ -152,7 +152,14 @@ npm ci
 npm run lint
 npm run compile        # tsc → dist/, which is committed; CI fails if it is stale
 npm test               # tests import dist/, so compile first
+UPDATE_GOLDEN=1 npm test  # re-record test/golden/ after a deliberate output change
 npm run test:packed    # npm pack, install into a temp project, render one plot with a data file
 ```
 
 Requires Node 22 or later (`.nvmrc` pins the version used in development).
+
+## Releasing
+
+Versions, golden SVG tests and the release procedure follow
+[Releasing](http://192.168.188.68:3001/projects/markdown-renderers/wiki/Releasing).
+What each version changed is in [CHANGELOG.md](CHANGELOG.md).

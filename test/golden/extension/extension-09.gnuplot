@@ -1,0 +1,1 @@
+plot "./data/missing.csv" using 1:2

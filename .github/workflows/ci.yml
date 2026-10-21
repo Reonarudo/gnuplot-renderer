@@ -30,3 +30,26 @@ jobs:
       - name: Tag matches package.json version
         if: startsWith(github.ref, 'refs/tags/')
         run: test "${GITHUB_REF_NAME}" = "v$(node -p 'require("./package.json").version')"
+  # Publishes the release a pushed tag names (Releasing): the npm pack tarball as its one asset,
+  # the version's CHANGELOG.md section as its notes. The only job that may write.
+  release:
+    needs: check
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version-file: .nvmrc
+      - run: npm pack --ignore-scripts --json > "$RUNNER_TEMP/pack.json"
+      - name: Release notes from CHANGELOG.md
+        run: |
+          awk -v v="${GITHUB_REF_NAME#v}" '/^## \[/ { on = index($0, "## [" v "]") == 1; next } on' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          grep -q . "$RUNNER_TEMP/notes.md"
+      - run: gh release create "$GITHUB_REF_NAME" ./*.tgz --verify-tag --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Tarball integrity
+        run: node -p 'const [p] = require(process.argv[1]); p.filename + " " + p.integrity' "$RUNNER_TEMP/pack.json"

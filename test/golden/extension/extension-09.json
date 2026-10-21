@@ -1,0 +1,6 @@
+{
+  "status": "failure",
+  "message": "cannot load data file \"./data/missing.csv\": file not found",
+  "line": 1,
+  "column": 6
+}
