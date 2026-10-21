@@ -35,7 +35,7 @@
   "scripts": {
     "lint": "tsc --noEmit -p tsconfig.json",
     "compile": "rm -rf dist && tsc -p tsconfig.build.json",
-    "test": "node --import tsx --test test/*.test.ts",
+    "test": "node --import tsx --test --test-concurrency=1 test/*.test.ts",
     "test:packed": "node scripts/test-packed.mjs"
   },
   "dependencies": {
